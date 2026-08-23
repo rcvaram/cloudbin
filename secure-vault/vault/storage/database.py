@@ -166,13 +166,6 @@ class Database:
         return self._row_to_record(row)
 
     def find_by_source_and_hash(self, original_abspath: str, sha256_hash: str) -> ArchiveRecord | None:
-        """
-        Find an existing archive for the same source path and file content.
-
-        Returns:
-            ArchiveRecord if found, otherwise None.
-        """
-
         with self._connect() as connection:
             row = connection.execute("""
                                      SELECT id,
