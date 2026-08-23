@@ -15,6 +15,10 @@ class ArchiveNotFoundError(DatabaseError):
     """Raised when an archive record cannot be found."""
 
 
+class DuplicateArchiveError(DatabaseError):
+    """Raised when an archive already exists for the same path and SHA-256."""
+
+
 @dataclass(frozen=True)
 class ArchiveRecord:
     id: int
@@ -66,7 +70,8 @@ class Database:
                                        CHECK (status IN ('PENDING', 'ARCHIVED', 'RESTORED', 'DELETED')),
                                    source_type       TEXT    NOT NULL CHECK ( source_type IN ('TRASH', 'VAULTDROP')),
                                    created_at        TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                   updated_at        TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                   updated_at        TEXT    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                   UNIQUE (original_abspath, sha256_hash)
                                )
                                """)
 
@@ -122,14 +127,21 @@ class Database:
         if not sha256_hash:
             raise ValueError("sha256_hash cannot be empty.")
 
-        with self._connect() as connection:
-            cursor = connection.execute("""INSERT INTO vault_archives (original_filename, original_abspath,
-                                                                       cloud_relpath,
-                                                                       size_bytes, sha256_hash, status, source_type)
-                                           VALUES (?, ?, ?, ?, ?, ?, ?)""",
-                                        (original_filename, original_abspath, cloud_relpath, size_bytes, sha256_hash,
-                                         status, source_type))
-            return int(cursor.lastrowid)
+        try:
+            with self._connect() as connection:
+                cursor = connection.execute("""INSERT INTO vault_archives (original_filename, original_abspath,
+                                                                           cloud_relpath,
+                                                                           size_bytes, sha256_hash, status, source_type)
+                                               VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                                            (original_filename, original_abspath, cloud_relpath, size_bytes,
+                                             sha256_hash,
+                                             status, source_type))
+                return int(cursor.lastrowid)
+        except sqlite3.IntegrityError as exc:
+            if "UNIQUE constraint failed" in str(exc):
+                raise DuplicateArchiveError("An archive already exists for this source path and SHA-256 hash.") from exc
+
+            raise DatabaseError("Failed to create archive record.") from exc
 
     def get_archive(self, archive_id: int) -> ArchiveRecord:
         """Return one archive record by ID."""
@@ -146,10 +158,40 @@ class Database:
                                                created_at,
                                                updated_at
                                         FROM vault_archives
-                                        WHERE id = ? """, (archive_id)).fetchone()
+                                        WHERE id = ? """, (archive_id,)).fetchone()
 
         if row is None:
             raise ArchiveNotFoundError(f"Archive not found: {archive_id}")
+
+        return self._row_to_record(row)
+
+    def find_by_source_and_hash(self, original_abspath: str, sha256_hash: str) -> ArchiveRecord | None:
+        """
+        Find an existing archive for the same source path and file content.
+
+        Returns:
+            ArchiveRecord if found, otherwise None.
+        """
+
+        with self._connect() as connection:
+            row = connection.execute("""
+                                     SELECT id,
+                                            original_filename,
+                                            original_abspath,
+                                            cloud_relpath,
+                                            size_bytes,
+                                            sha256_hash,
+                                            status,
+                                            source_type,
+                                            created_at,
+                                            updated_at
+                                     FROM vault_archives
+                                     WHERE original_abspath = ?
+                                       AND sha256_hash = ?
+                                     LIMIT 1  """, (original_abspath, sha256_hash), ).fetchone()
+
+        if row is None:
+            return None
 
         return self._row_to_record(row)
 
