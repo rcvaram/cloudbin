@@ -4,7 +4,9 @@ import logging
 from os import fsdecode
 from pathlib import Path
 
-from watchdog.events import (FileClosedEvent, FileCreatedEvent, FileMovedEvent, FileSystemEventHandler, FileSystemEvent)
+from watchdog.events import (FileClosedEvent, FileClosedNoWriteEvent, FileCreatedEvent, FileSystemEvent,
+                             FileSystemEventHandler
+                             )
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
@@ -32,20 +34,12 @@ class VaultDropEventHandler(FileSystemEventHandler):
 
         logger.debug("File created: %s", path)
 
-    def on_moved(self, event: FileSystemEvent) -> None:
-        if event.is_directory:
-            return
-
-        path = self._to_path(event.dest_path)
-
-        if self._should_ignore(path):
-            return
-
-        logger.info("File moved into VaultDrop: %s", path)
-
-        self._process_file(path)
-
     def on_closed(self, event: FileClosedEvent) -> None:
+        """
+        Process a file after it was opened for writing and closed.
+
+        This is the normal path for files created or copied into VaultDrop.
+        """
         if event.is_directory:
             return
 
@@ -55,6 +49,25 @@ class VaultDropEventHandler(FileSystemEventHandler):
             return
 
         logger.info("File write completed: %s", path)
+
+        self._process_file(path)
+
+    def on_closed_no_write(self, event: FileClosedNoWriteEvent) -> None:
+        """
+        Process a file that was opened without being modified.
+
+        This handles files that arrive already complete, for example
+        a file moved into VaultDrop from another directory.
+        """
+        if event.is_directory:
+            return
+
+        path = self._to_path(event.src_path)
+
+        if self._should_ignore(path):
+            return
+
+        logger.info("File received without write: %s", path)
 
         self._process_file(path)
 
@@ -97,7 +110,7 @@ class VaultDropWatcher:
         observer = Observer()
 
         observer.schedule(handler, str(self.watch_path), recursive=True,
-                          event_filter=[FileCreatedEvent, FileMovedEvent, FileClosedEvent])
+                          event_filter=[FileCreatedEvent, FileClosedEvent, FileClosedNoWriteEvent])
 
         observer.start()
 
