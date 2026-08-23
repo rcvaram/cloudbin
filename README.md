@@ -2,6 +2,7 @@
 
 ### Your cloud does not need to be trusted.
 ### **Use it as a bin.**
+![CloudBin](/home/sivaram/PycharmProjects/cloudbin/docs/CloudBinArchitecture.png)
 
 CloudBin is a privacy-first file archival tool that lets you use cloud storage **without treating your cloud provider as trusted storage**.
 
