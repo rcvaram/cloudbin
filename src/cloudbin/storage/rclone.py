@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-DEFAULT_REMOTE = "gdrive-crypt:"
+DEFAULT_REMOTE = None #gdrive-crypt:
 DEFAULT_TIMEOUT_SECONDS = 300
 
 
@@ -24,7 +24,7 @@ class RcloneCommandError(RcloneError):
 
 class RcloneClient:
 
-    def __init__(self, remote: str = DEFAULT_REMOTE, executable: str = "rclone",
+    def __init__(self, remote: str, executable: str = "rclone",
                  timeout: int = DEFAULT_TIMEOUT_SECONDS, ) -> None:
         self.remote = remote
         self.executable = executable
@@ -38,9 +38,6 @@ class RcloneClient:
         if not self.remote.endswith(":"):
             raise ValueError("rclone remote must end with ':'. "  "Example: 'gdrive-crypt:'")
 
-        if self.remote == "gdrive:":
-            raise ValueError(
-                "SecureVault refuses to use the raw Google Drive remote. " "Use an rclone crypt remote such as 'gdrive-crypt:'.")
 
         if shutil.which(self.executable) is None:
             raise RcloneNotFoundError(f"Could not find rclone executable: {self.executable}")

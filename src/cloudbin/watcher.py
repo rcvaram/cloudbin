@@ -5,8 +5,7 @@ from os import fsdecode
 from pathlib import Path
 
 from watchdog.events import (FileClosedEvent, FileClosedNoWriteEvent, FileCreatedEvent, FileSystemEvent,
-                             FileSystemEventHandler
-                             )
+                             FileSystemEventHandler)
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
