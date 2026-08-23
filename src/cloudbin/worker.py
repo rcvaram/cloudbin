@@ -4,8 +4,8 @@ import hashlib
 import logging
 from pathlib import Path
 
-from vault.storage.database import (ArchiveRecord, Database, DuplicateArchiveError)
-from vault.storage.rclone import RcloneClient
+from cloudbin.storage.database import (ArchiveRecord, Database, DuplicateArchiveError)
+from cloudbin.storage.rclone import RcloneClient
 
 logger = logging.getLogger(__name__)
 

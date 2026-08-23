@@ -10,7 +10,7 @@ from watchdog.events import (FileClosedEvent, FileClosedNoWriteEvent, FileCreate
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
-from vault.worker import VaultWorker
+from cloudbin.worker import VaultWorker
 
 logger = logging.getLogger(__name__)
 
