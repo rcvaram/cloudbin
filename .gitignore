@@ -1,2 +1,10 @@
 data/*.sqlite
 test-data/
+.idea
+.idea/*
+venv
+venv/*
+src/cloudbin.egg-info/
+src/cloudbin.egg-info/*
+dist
+dist/*

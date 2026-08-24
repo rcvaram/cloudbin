@@ -15,7 +15,7 @@ from cloudbin.storage.rclone_config import (
     RcloneConfigError,
 )
 from cloudbin.watcher import VaultDropWatcher
-from cloudbin.worker import VaultWorker
+from cloudbin.worker import WorkerService
 
 DEFAULT_VAULT_ROOT = (
     Path("~/CloudBin/VaultDrop").expanduser()
@@ -246,7 +246,7 @@ def _start() -> int:
     # Create worker
     # --------------------------------------------------------------
 
-    worker = VaultWorker(
+    worker = WorkerService(
         database=database,
         storage=storage,
         vault_root=config.vault_root,
