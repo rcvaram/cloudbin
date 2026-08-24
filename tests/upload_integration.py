@@ -5,7 +5,7 @@ from pathlib import Path
 
 from cloudbin.storage.database import Database
 from cloudbin.storage.rclone import RcloneClient
-from cloudbin.worker import VaultWorker
+from cloudbin.worker import WorkerService
 
 
 def main() -> None:
@@ -43,7 +43,7 @@ def main() -> None:
     print("    OK")
 
     print("[3] Initializing worker...")
-    worker = VaultWorker(
+    worker = WorkerService(
         database=database,
         storage=storage,
         vault_root=test_root,

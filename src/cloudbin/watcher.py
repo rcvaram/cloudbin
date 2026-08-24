@@ -9,7 +9,7 @@ from watchdog.events import (FileClosedEvent, FileClosedNoWriteEvent, FileCreate
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
-from cloudbin.worker import VaultWorker
+from cloudbin.worker import WorkerService
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ STUB_SUFFIX = ".sv"
 
 class VaultDropEventHandler(FileSystemEventHandler):
 
-    def __init__(self, worker: VaultWorker) -> None:
+    def __init__(self, worker: WorkerService) -> None:
         super().__init__()
         self.worker = worker
 
@@ -87,7 +87,7 @@ class VaultDropEventHandler(FileSystemEventHandler):
 
 
 class VaultDropWatcher:
-    def __init__(self, watch_path: str | Path, worker: VaultWorker) -> None:
+    def __init__(self, watch_path: str | Path, worker: WorkerService) -> None:
         self.watch_path = Path(watch_path).expanduser().resolve()
         self.worker = worker
         self._observer: BaseObserver | None = None

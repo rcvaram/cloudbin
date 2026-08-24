@@ -17,7 +17,7 @@ class WorkerError(RuntimeError):
     """Base exception for SecureVault worker failures."""
 
 
-class VaultWorker:
+class WorkerService:
     """
     Orchestrates SecureVault file archiving.
 
@@ -110,12 +110,14 @@ has been committed as ARCHIVED.
             self.database.update_status(archive_id, "ARCHIVED")
         except Exception:
             logger.exception("Archive failed; keeping local file: %s", source)
+            return
 
         try:
             self._create_stub(archive_id=archive_id, source=source, cloud_relpath=cloud_relpath,
                               sha256_hash=sha256_hash)
         except Exception:
             logger.exception("Archive succeeded but creating local stub failed: %s", source)
+            return
 
         self._delete_source(source)
 

@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/GDriveBin.iml" filepath="$PROJECT_DIR$/.idea/GDriveBin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/cloudbin.iml" filepath="$PROJECT_DIR$/.idea/cloudbin.iml" />
     </modules>
   </component>
 </project>
