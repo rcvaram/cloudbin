@@ -8,3 +8,5 @@ src/cloudbin.egg-info/
 src/cloudbin.egg-info/*
 dist
 dist/*
+src/cloudbin/__pycache__/
+src/cloudbin/__pycache__/*
